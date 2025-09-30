@@ -1,50 +1,42 @@
 pipeline {
-    agent Master  // Master에서 빌드 실행
-
-    environment {
-        APP_NAME = 'bumpy103/schat-backend-app'
-        DOCKER_IMAGE = "bumpy103/schat-backend-app:latest"
-        DEPLOY_NODE = 'product-node'  // 실행 서버 Node label
-    }
+    agent { label 'build-node' } // 빌드 전용 노드
 
     stages {
+
         stage('Checkout') {
             steps {
-                checkout scm  // 현재 브랜치 자동 체크아웃
+                script {
+                    echo "Building branch: ${env.BRANCH_NAME}"
+                    git url: 'https://github.com/bumpy103/simple_chat_backend.git', branch: "${env.BRANCH_NAME}"
+                }
             }
         }
 
-        stage('Build & Test') {
+        stage('Build') {
             steps {
-                echo '빌드 및 테스트 중...'
-                sh './gradlew clean build test'  // Gradle 프로젝트 예시
+                script {
+                    echo "Starting Gradle build..."
+                    sh './gradlew build --no-daemon'
+                }
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Archive Artifact') {
             steps {
-                echo 'Docker 이미지 빌드 중...'
-                sh "docker build -t ${DOCKER_IMAGE} ."
-            }
-        }
-
-        stage('Deploy to Execution Node') {
-            agent { label "${DEPLOY_NODE}" }  // 배포 전용 Node에서 실행
-            steps {
-                echo '실행 서버에 배포 중...'
-                sh "docker stop ${APP_NAME} || true"
-                sh "docker rm ${APP_NAME} || true"
-                sh "docker run -d --name ${APP_NAME} -p 8080:8080 ${DOCKER_IMAGE}"
+                script {
+                    echo "Archiving build artifacts..."
+                    archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
+                }
             }
         }
     }
 
     post {
         success {
-            echo 'CI/CD 파이프라인 성공!'
+            echo "CI build succeeded for branch ${env.BRANCH_NAME}!"
         }
         failure {
-            echo 'CI/CD 파이프라인 실패!'
+            echo "CI build failed for branch ${env.BRANCH_NAME}. Check logs!"
         }
     }
 }

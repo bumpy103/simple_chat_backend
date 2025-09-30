@@ -1,24 +1,11 @@
-# 빌드용 이미지
-FROM gradle:8.14.0-jdk21 AS builder
+FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
-# Gradle 캐시 활용 (의존성만 먼저 다운로드)
-COPY build.gradle settings.gradle ./
-RUN gradle dependencies --no-daemon || true
+# 빌드된 JAR 복사
+COPY --from=builder /app/build/libs/*.jar app.jar
 
-# 소스 복사 및 빌드
-COPY src ./src
-RUN gradle build --no-daemon
+# 포트 설정 (Spring Boot 기본 8080)
+EXPOSE 8080
 
-# # 실행용 이미지
-# FROM eclipse-temurin:21-jdk-alpine
-# WORKDIR /app
-
-# # 빌드된 JAR 복사
-# COPY --from=builder /app/build/libs/*.jar app.jar
-
-# # 포트 설정 (Spring Boot 기본 8080)
-# EXPOSE 8080
-
-# # 애플리케이션 실행
-# ENTRYPOINT ["java", "-jar", "app.jar"]
+# 애플리케이션 실행
+ENTRYPOINT ["java", "-jar", "app.jar"]
