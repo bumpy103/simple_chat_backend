@@ -2,9 +2,9 @@
 FROM gradle:8.14.0-jdk21 AS builder
 WORKDIR /app
 
-# Gradle 캐시 활용을 위해 먼저 의존성만 복사
+# Gradle 캐시 활용 (의존성만 먼저 다운로드)
 COPY build.gradle settings.gradle ./
-RUN gradle build --no-daemon || true
+RUN gradle dependencies --no-daemon || true
 
 # 소스 복사 및 빌드
 COPY src ./src
