@@ -2,6 +2,10 @@
 pipeline {
     agent { label 'build-node' } // 빌드 전용 노드
 
+    environment {
+        GRADLE_OPTS = '-Xmx256m -XX:+UseSerialGC' // t2.nano 환경 최적화
+    }
+
     stages {
 
         stage('Checkout') {
