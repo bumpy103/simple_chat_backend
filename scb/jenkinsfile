@@ -1,3 +1,4 @@
+//sad
 pipeline {
     agent { label 'build-node' } // 빌드 전용 노드
 
