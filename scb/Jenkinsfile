@@ -23,10 +23,11 @@ pipeline {
         // }
 
         stage('Build') {
-            steps {
-                script {
-                    echo "Starting Gradle build..."
-                    sh 'scb/gradlew build --no-daemon'
+            stage('Build') {
+                steps {
+                    dir('scb') {
+                        sh './gradlew build --no-daemon'
+                    }
                 }
             }
         }
