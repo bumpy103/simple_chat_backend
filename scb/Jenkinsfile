@@ -23,14 +23,13 @@ pipeline {
         // }
 
         stage('Build') {
-            stage('Build') {
-                steps {
-                    dir('scb') {
-                        sh './gradlew build --no-daemon'
-                    }
+            steps {
+                dir('scb') {
+                    sh './gradlew build --no-daemon'
                 }
             }
         }
+
 
         stage('Archive Artifact') {
             steps {
